@@ -6,6 +6,11 @@ LifeSync is a personal productivity and habit-tracking application built using P
 
 With features like smart reminders, a focus timer, weekly reviews, gamification, and productivity analytics, LifeSync makes personal growth easier and more organized.
 
+🚀 Live Demo
+
+Try LifeSync here:
+https://lifesync-r3hvlswjnzunruksrrdesh.streamlit.app/
+
 ---
 
 ## ✨ Features
@@ -203,3 +208,4 @@ This project is open-source and available under the MIT License.
 ---
 
 **LifeSync – Make Every Day Count! 🌱**
+
