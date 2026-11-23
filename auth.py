@@ -1,52 +1,25 @@
 
-import os
 import re
 import streamlit as st
 import bcrypt
-from dotenv import load_dotenv
-from streamlit_cookies_manager import EncryptedCookieManager
+
 from database import get_connection
 
 
 # ==================================================
-# 1. LOAD ENVIRONMENT VARIABLES
-# ==================================================
-
-load_dotenv()
-
-
-# ==================================================
-# 2. EMAIL VALIDATION
+# 1. EMAIL VALIDATION
 # ==================================================
 
 def is_valid_email(email):
-
     pattern = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
-
     return bool(re.match(pattern, email))
 
 
 # ==================================================
-# 3. INITIALIZE AUTHENTICATION
+# 2. INITIALIZE AUTHENTICATION
 # ==================================================
 
 def initialize_auth():
-
-    cookie_password = os.getenv("COOKIE_PASSWORD")
-
-    if not cookie_password:
-        st.error(
-            "COOKIE_PASSWORD is missing from your .env file."
-        )
-        st.stop()
-
-    cookies = EncryptedCookieManager(
-        prefix="trackly/",
-        password=cookie_password
-    )
-
-    if not cookies.ready():
-        st.stop()
 
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
@@ -54,48 +27,13 @@ def initialize_auth():
     if "user" not in st.session_state:
         st.session_state.user = None
 
-    # Restore login after browser refresh
-    if not st.session_state.authenticated:
-
-        user_id = cookies.get("user_id")
-
-        if user_id:
-
-            conn = get_connection()
-
-            try:
-                user = conn.execute(
-                    """
-                    SELECT id, name, email
-                    FROM users
-                    WHERE id = ?
-                    """,
-                    (user_id,)
-                ).fetchone()
-
-            finally:
-                conn.close()
-
-            if user:
-
-                st.session_state.user = {
-                    "id": user[0],
-                    "name": user[1],
-                    "email": user[2]
-                }
-
-                st.session_state.authenticated = True
-
-            else:
-
-                cookies["user_id"] = ""
-                cookies.save()
-
-    return cookies
+    # Cookies are no longer used.
+    # Authentication is maintained using Streamlit session state.
+    return None
 
 
 # ==================================================
-# 4. REGISTER USER
+# 3. REGISTER USER
 # ==================================================
 
 def register_user(name, email, password):
@@ -115,7 +53,6 @@ def register_user(name, email, password):
     conn = get_connection()
 
     try:
-
         existing_user = conn.execute(
             """
             SELECT id
@@ -146,7 +83,6 @@ def register_user(name, email, password):
         return True, "Account created successfully!"
 
     except Exception as e:
-
         return False, f"Registration failed: {e}"
 
     finally:
@@ -154,7 +90,7 @@ def register_user(name, email, password):
 
 
 # ==================================================
-# 5. LOGIN USER
+# 4. LOGIN USER
 # ==================================================
 
 def login_user(email, password):
@@ -164,7 +100,6 @@ def login_user(email, password):
     conn = get_connection()
 
     try:
-
         user = conn.execute(
             """
             SELECT id, name, email, password_hash
@@ -199,7 +134,7 @@ def login_user(email, password):
 
 
 # ==================================================
-# 6. UPDATE PROFILE
+# 5. UPDATE PROFILE
 # ==================================================
 
 def update_profile(user_id, name, email):
@@ -216,7 +151,6 @@ def update_profile(user_id, name, email):
     conn = get_connection()
 
     try:
-
         existing_user = conn.execute(
             """
             SELECT id
@@ -241,14 +175,12 @@ def update_profile(user_id, name, email):
 
         conn.commit()
 
-        # Update current session
         st.session_state.user["name"] = name
         st.session_state.user["email"] = email
 
         return True, "Profile updated successfully!"
 
     except Exception as e:
-
         return False, f"Profile update failed: {e}"
 
     finally:
@@ -256,7 +188,7 @@ def update_profile(user_id, name, email):
 
 
 # ==================================================
-# 7. CHANGE PASSWORD
+# 6. CHANGE PASSWORD
 # ==================================================
 
 def change_password(user_id, current_password, new_password):
@@ -273,7 +205,6 @@ def change_password(user_id, current_password, new_password):
     conn = get_connection()
 
     try:
-
         user = conn.execute(
             """
             SELECT password_hash
@@ -313,7 +244,6 @@ def change_password(user_id, current_password, new_password):
         return True, "Password changed successfully!"
 
     except Exception as e:
-
         return False, f"Password change failed: {e}"
 
     finally:
@@ -321,7 +251,7 @@ def change_password(user_id, current_password, new_password):
 
 
 # ==================================================
-# 8. PROFILE & SETTINGS PAGE
+# 7. PROFILE & SETTINGS PAGE
 # ==================================================
 
 def show_profile_settings():
@@ -336,15 +266,11 @@ def show_profile_settings():
     st.title("⚙️ Profile & Settings")
     st.caption("Manage your personal information and account security.")
 
-    # ==================================================
     # PROFILE INFORMATION
-    # ==================================================
 
     st.subheader("👤 Profile Information")
 
-    st.info(
-        "Update your name and email address below."
-    )
+    st.info("Update your name and email address below.")
 
     with st.form("profile_update_form"):
 
@@ -374,15 +300,12 @@ def show_profile_settings():
             if success:
                 st.success(message)
                 st.rerun()
-
             else:
                 st.error(message)
 
     st.divider()
 
-    # ==================================================
     # CHANGE PASSWORD
-    # ==================================================
 
     st.subheader("🔐 Change Password")
 
@@ -415,15 +338,12 @@ def show_profile_settings():
         if password_submit:
 
             if not current_password or not new_password or not confirm_password:
-
                 st.warning("Please fill in all password fields.")
 
             elif new_password != confirm_password:
-
                 st.error("New passwords do not match.")
 
             else:
-
                 success, message = change_password(
                     user_id,
                     current_password,
@@ -433,15 +353,12 @@ def show_profile_settings():
                 if success:
                     st.success(message)
                     st.rerun()
-
                 else:
                     st.error(message)
 
     st.divider()
 
-    # ==================================================
     # ACCOUNT INFORMATION
-    # ==================================================
 
     st.subheader("📋 Account Information")
 
@@ -455,13 +372,10 @@ def show_profile_settings():
 
 
 # ==================================================
-# 9. LOGOUT USER
+# 8. LOGOUT USER
 # ==================================================
 
-def logout_user(cookies):
-
-    cookies["user_id"] = ""
-    cookies.save()
+def logout_user(cookies=None):
 
     st.session_state.authenticated = False
     st.session_state.user = None
@@ -471,21 +385,19 @@ def logout_user(cookies):
 
 
 # ==================================================
-# 10. LOGIN AND REGISTRATION PAGE
+# 9. LOGIN AND REGISTRATION PAGE
 # ==================================================
 
-def show_auth_page(cookies):
+def show_auth_page(cookies=None):
 
-    st.title("🎯 Welcome to Trackly")
+    st.title("🌱 Welcome to LifeSync")
     st.caption("Track your progress. Stay consistent.")
 
     login_tab, register_tab = st.tabs(
         ["Login", "Create Account"]
     )
 
-    # ==================================================
     # LOGIN TAB
-    # ==================================================
 
     with login_tab:
 
@@ -493,9 +405,7 @@ def show_auth_page(cookies):
 
         with st.form("login_form"):
 
-            email = st.text_input(
-                "Email Address"
-            )
+            email = st.text_input("Email Address")
 
             password = st.text_input(
                 "Password",
@@ -510,13 +420,9 @@ def show_auth_page(cookies):
             if submitted:
 
                 if not email.strip() or not password:
-
-                    st.warning(
-                        "Please enter your email and password."
-                    )
+                    st.warning("Please enter your email and password.")
 
                 else:
-
                     success, message, user = login_user(
                         email,
                         password
@@ -527,19 +433,13 @@ def show_auth_page(cookies):
                         st.session_state.user = user
                         st.session_state.authenticated = True
 
-                        cookies["user_id"] = str(user["id"])
-                        cookies.save()
-
                         st.success(message)
                         st.rerun()
 
                     else:
-
                         st.error(message)
 
-    # ==================================================
     # REGISTRATION TAB
-    # ==================================================
 
     with register_tab:
 
@@ -547,13 +447,9 @@ def show_auth_page(cookies):
 
         with st.form("register_form"):
 
-            name = st.text_input(
-                "Full Name"
-            )
+            name = st.text_input("Full Name")
 
-            email = st.text_input(
-                "Email Address"
-            )
+            email = st.text_input("Email Address")
 
             password = st.text_input(
                 "Password",
@@ -573,25 +469,15 @@ def show_auth_page(cookies):
             if submitted:
 
                 if not name.strip() or not email.strip():
-
-                    st.warning(
-                        "Please fill in all required fields."
-                    )
+                    st.warning("Please fill in all required fields.")
 
                 elif len(password) < 8:
-
-                    st.warning(
-                        "Password must contain at least 8 characters."
-                    )
+                    st.warning("Password must contain at least 8 characters.")
 
                 elif password != confirm_password:
-
-                    st.error(
-                        "Passwords do not match."
-                    )
+                    st.error("Passwords do not match.")
 
                 else:
-
                     success, message = register_user(
                         name,
                         email,
@@ -599,15 +485,11 @@ def show_auth_page(cookies):
                     )
 
                     if success:
-
                         st.success(message)
-
                         st.info(
                             "Your account has been created. "
                             "You can now log in."
                         )
 
                     else:
-
                         st.error(message)
-
