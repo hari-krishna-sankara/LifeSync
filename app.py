@@ -36,8 +36,8 @@ from focus_timer import show_focus_timer
 # ==========================================================
 
 st.set_page_config(
-    page_title="Trackly",
-    page_icon="🎯",
+    page_title="LifeSync",
+    page_icon="🌱",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -407,6 +407,7 @@ def get_dashboard_reminders(user_id):
                 reminders["Upcoming Tasks"].append(item)
 
         # GOAL REMINDERS
+        # FIXED: Pass user_id for the SQL placeholder.
 
         goals = conn.execute(
             """
@@ -566,10 +567,10 @@ with st.sidebar:
         """
         <div style="text-align:center; padding:15px 0 25px 0;">
             <h1 style="color:#A78BFA; font-size:32px; margin:0;">
-                🎯 Trackly
+                🌱 LifeSync
             </h1>
             <p style="color:#9CA3AF; margin-top:5px; font-size:13px;">
-                Your Personal Productivity Tracker
+                Plan Better. Stay Consistent. Grow Every Day.
             </p>
         </div>
         """
@@ -665,9 +666,9 @@ with st.sidebar:
             font-size:11px;
             margin-top:25px;
         ">
-            Trackly © 2026
+            LifeSync © 2026
             <br>
-            Stay consistent. Keep growing.
+            Plan Better. Grow Every Day.
         </div>
         """
     )
@@ -704,7 +705,7 @@ if selected_page == "Dashboard":
             color:#FFFFFF;
             font-size:32px;
         ">
-            Welcome, {user_name} 👋
+            Welcome to LifeSync, {user_name} 👋
         </h1>
 
         <p style="
@@ -713,8 +714,7 @@ if selected_page == "Dashboard":
             margin-bottom:0;
             font-size:16px;
         ">
-            Track your progress. Stay consistent.
-            Keep moving forward. 🚀
+            Your journey to better productivity starts here. 🚀
         </p>
     </div>
     """
