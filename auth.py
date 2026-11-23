@@ -3,7 +3,6 @@ import os
 import re
 import streamlit as st
 import bcrypt
-
 from dotenv import load_dotenv
 from streamlit_cookies_manager import EncryptedCookieManager
 from database import get_connection
@@ -611,3 +610,4 @@ def show_auth_page(cookies):
                     else:
 
                         st.error(message)
+
