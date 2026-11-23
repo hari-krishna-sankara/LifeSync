@@ -2,7 +2,6 @@ streamlit
 plotly
 bcrypt
 pandas
-python-dotenv
-streamlit-cookies-manager
 streamlit>=1.37.1,<2.0
+
 
